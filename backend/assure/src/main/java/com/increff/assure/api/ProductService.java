@@ -1,6 +1,7 @@
-package com.increff.assure.service;
+package com.increff.assure.api;
 
 import com.increff.assure.dao.ProductDao;
+import com.increff.assure.exception.ApiException;
 import com.increff.assure.model.ProductDetailsUpdateForm;
 import com.increff.assure.pojo.ProductPojo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,17 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductPojo getById(long globalSkuId) {
-        return dao.select(globalSkuId);
+    public ProductPojo getById(Long globalSkuId) throws ApiException {
+        return checkForResponseSelectById(globalSkuId);
+    }
+
+    @Transactional(readOnly = true)
+    private ProductPojo checkForResponseSelectById(Long globalSkuId) throws ApiException {
+        ProductPojo p = dao.select(globalSkuId);
+        if (p == null) {
+            throw new ApiException("global sku id is not present");
+        }
+        return p;
     }
 
     @Transactional(readOnly = true)

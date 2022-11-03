@@ -1,4 +1,4 @@
-package com.increff.assure.service;
+package com.increff.assure.api;
 
 import com.increff.assure.dao.UserDao;
 import com.increff.assure.pojo.UserPojo;
@@ -30,7 +30,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPojo getUserById(long id) {
+    public UserPojo getUserById(Long id) {
         return dao.select(id);
     }
 }
