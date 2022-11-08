@@ -1,26 +1,29 @@
 package com.increff.assure.dto.helper;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.increff.assure.exception.ApiException;
 import com.increff.assure.model.ProductData;
 import com.increff.assure.model.ProductDetailsUpdateForm;
 import com.increff.assure.model.ProductForm;
 import com.increff.assure.pojo.ProductPojo;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProductDtoHelper {
 
 
-    public static ProductPojo convertProductFormToProductPojo(ProductForm productForm, long clientId) {
-        return new ProductPojo();
+    public static ProductPojo convertProductFormToProductPojo(ProductForm productForm, Long clientId) {
+        ProductPojo p = new ProductPojo();
+        p.setClientSkuId(productForm.getClientSkuId());
+        p.setMrp(productForm.getMrp());
+        p.setName(productForm.getName());
+        p.setClientId(clientId);
+        p.setDescription(productForm.getDescription());
+        p.setBrandId(productForm.getBrandId());
+        return p;
     }
 
-    public static List<ProductPojo> convertListOfProductFormToListOfProductPojo(List<ProductForm> productFormList, long clientId) {
+    public static List<ProductPojo> convertListOfProductFormToListOfProductPojo(List<ProductForm> productFormList, Long clientId) {
         List<ProductPojo> productPojos = new ArrayList<>();
         for (ProductForm p : productFormList) {
             productPojos.add(convertProductFormToProductPojo(p, clientId));
@@ -29,19 +32,22 @@ public class ProductDtoHelper {
     }
 
     public static ProductData convertProductPojoToProductData(ProductPojo p) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ProductData d = null;
-        try {
-            d = objectMapper.readValue(objectMapper.writeValueAsString(p), ProductData.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        ProductData d = new ProductData();
+        d.setName(p.getName());
+        d.setDescription(p.getDescription());
+        d.setMrp(p.getMrp());
+        d.setBrandId(p.getBrandId());
+        d.setClientId(p.getClientId());
+        d.setClientSkuId(p.getClientSkuId());
         return d;
     }
 
     public static List<ProductData> convertListOfProductPojoToListOfProductData(List<ProductPojo> productPojos) {
-        return productPojos.stream().map((ProductDtoHelper::convertProductPojoToProductData)).collect(Collectors.toList());
+        List<ProductData> productDataList = new ArrayList<>();
+        for (ProductPojo p : productPojos) {
+            productDataList.add(convertProductPojoToProductData(p));
+        }
+        return productDataList;
     }
 
     public static void validate(ProductForm productForm) throws ApiException {
