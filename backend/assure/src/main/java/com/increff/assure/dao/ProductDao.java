@@ -10,10 +10,19 @@ import java.util.List;
 
 @Repository
 public class ProductDao extends AbstractDao {
+
+//    public static final Logger LOGGER = LogManager.getLogger(ProductDao.class);
+
+    // TODO: Handle errors in product upload, check for clientId existence
+
     public static final String SELECT_ALL = "select p from ProductPojo p";
-    public static final String SELECT_BY_GLOBALSKUID = "select p from ProductPojo p" +
+    public static final String SELECT_BY_GLOBALSKUID = "select p from ProductPojo p " +
             "where globalSkuId=:globalSkuId";
-    public static final String SELECT_BY_CLIENTID_AND_CLIENTSKUID = "select p from ProductPojo p" +
+
+    public static final String SELECT_BY_CLIENTID = "select p from ProductPojo p " +
+            "where clientId=:clientId";
+
+    public static final String SELECT_BY_CLIENTID_AND_CLIENTSKUID = "select p from ProductPojo p " +
             "where clientId=:clientId and clientSkuId=:clientSkuId";
 
     @Transactional
@@ -28,14 +37,21 @@ public class ProductDao extends AbstractDao {
     }
 
     @Transactional(readOnly = true)
-    public ProductPojo select(long globalSkuId) {
+    public ProductPojo select(Long globalSkuId) {
         TypedQuery<ProductPojo> query = getQuery(SELECT_BY_GLOBALSKUID, ProductPojo.class);
         query.setParameter("globalSkuId", globalSkuId);
         return getSingle(query);
     }
 
     @Transactional(readOnly = true)
-    public ProductPojo selectByClientIdAndClientSkuId(long clientId, String clientSkuId) {
+    public List<ProductPojo> selectByClientId(Long clientId) {
+        TypedQuery<ProductPojo> query = getQuery(SELECT_BY_CLIENTID, ProductPojo.class);
+        query.setParameter("clientId", clientId);
+        return query.getResultList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductPojo selectByClientIdAndClientSkuId(Long clientId, String clientSkuId) {
         TypedQuery<ProductPojo> query = getQuery(
                 SELECT_BY_CLIENTID_AND_CLIENTSKUID,
                 ProductPojo.class
@@ -55,6 +71,5 @@ public class ProductDao extends AbstractDao {
         pojo.setName(updateForm.getName());
         pojo.setBrandId(updateForm.getBrandId());
         pojo.setDescription(updateForm.getDescription());
-//        insert(pojo);
     }
 }

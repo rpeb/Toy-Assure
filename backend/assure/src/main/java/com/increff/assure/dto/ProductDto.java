@@ -1,12 +1,12 @@
 package com.increff.assure.dto;
 
+import com.increff.assure.api.ProductService;
 import com.increff.assure.dto.helper.ProductDtoHelper;
 import com.increff.assure.exception.ApiException;
 import com.increff.assure.model.ProductData;
 import com.increff.assure.model.ProductDetailsUpdateForm;
 import com.increff.assure.model.ProductForm;
 import com.increff.assure.pojo.ProductPojo;
-import com.increff.assure.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ public class ProductDto {
     private ProductService service;
 
     @Transactional
-    public void bulkUpload(List<ProductForm> productFormList, long clientId) throws ApiException {
+    public void bulkUpload(List<ProductForm> productFormList, Long clientId) throws ApiException {
         ProductDtoHelper.normalizeList(productFormList);
         List<ProductPojo> productPojos = ProductDtoHelper.convertListOfProductFormToListOfProductPojo(productFormList, clientId);
         service.bulkUpload(productPojos);
@@ -38,7 +38,8 @@ public class ProductDto {
     }
 
     @Transactional(readOnly = true)
-    public ProductData getById(long globalSkuId) {
+    public ProductData getById(Long globalSkuId) throws ApiException {
         return ProductDtoHelper.convertProductPojoToProductData(service.getById(globalSkuId));
     }
+
 }

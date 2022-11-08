@@ -1,5 +1,6 @@
 package com.increff.assure.pojo;
 
+import com.increff.assure.model.TableConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,10 +11,10 @@ import javax.persistence.*;
 @Getter
 @Setter
 @ToString
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"clientSkuId","clientId"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"clientSkuId", "clientId"})})
 public class ProductPojo extends AbstractPojo {
     @Id
-    @TableGenerator(name = TableConstants.SEQ_PRODUCT , initialValue = TableConstants.SEQ_INITIAL_VALUE)
+    @TableGenerator(name = TableConstants.SEQ_PRODUCT, initialValue = TableConstants.SEQ_INITIAL_VALUE)
     @GeneratedValue(strategy = GenerationType.TABLE, generator = TableConstants.SEQ_PRODUCT)
     private Long globalSkuId;
 

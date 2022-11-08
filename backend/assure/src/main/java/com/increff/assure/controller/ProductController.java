@@ -14,7 +14,7 @@ import java.util.List;
 
 @Api
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping("/product")
 public class ProductController {
 
     @Autowired
@@ -28,7 +28,7 @@ public class ProductController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ApiOperation(value = "add list of products")
-    public void bulkUpload(@RequestBody List<ProductForm> productFormList, @RequestParam long clientId) throws ApiException {
+    public void bulkUpload(@RequestBody List<ProductForm> productFormList, @RequestParam Long clientId) throws ApiException {
         dto.bulkUpload(productFormList, clientId);
     }
 
@@ -50,7 +50,7 @@ public class ProductController {
 
     @RequestMapping(value = "/{globalSkuId}", method = RequestMethod.GET)
     @ApiOperation(value = "get a product by globalSkuId")
-    public ProductData getById(@PathVariable long globalSkuId) {
+    public ProductData getById(@PathVariable Long globalSkuId) throws ApiException {
         return dto.getById(globalSkuId);
     }
 
