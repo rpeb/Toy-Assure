@@ -27,6 +27,7 @@ public class UserDtoHelper {
         validate(userForm);
         userForm.setName(userForm.getName().trim().toLowerCase());
     }
+
     public static UserData convertUserPojoToUserData(UserPojo p) {
         UserData d = new UserData();
         d.setId(p.getId());
@@ -44,7 +45,7 @@ public class UserDtoHelper {
 
     public static List<UserData> convertListOfUserPojoToListOfUserData(List<UserPojo> userPojoList) {
         List<UserData> userDataList = new ArrayList<>();
-        for (UserPojo p: userPojoList) {
+        for (UserPojo p : userPojoList) {
             userDataList.add(convertUserPojoToUserData(p));
         }
         return userDataList;

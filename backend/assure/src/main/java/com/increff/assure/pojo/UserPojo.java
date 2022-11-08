@@ -1,6 +1,6 @@
 package com.increff.assure.pojo;
 
-import lombok.Data;
+import com.increff.assure.model.TableConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,7 +14,8 @@ import javax.persistence.*;
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "type"})})
 public class UserPojo extends AbstractPojo {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableGenerator(name = TableConstants.SEQ_USER, initialValue = TableConstants.SEQ_INITIAL_VALUE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = TableConstants.SEQ_USER)
     private Long id;
 
     @Column(nullable = false)

@@ -10,15 +10,13 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @Api
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
 
     public static final Logger LOGGER = LogManager.getLogger(UserController.class);
@@ -28,13 +26,8 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ApiOperation(value = "add a new user")
-    public ResponseEntity<Object> addUser(@RequestBody UserForm userForm) {
-        try {
-            dto.addUser(userForm);
-            return ResponseEntity.created(URI.create("xyz")).build();
-        } catch (ApiException e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public void addUser(@RequestBody UserForm userForm) throws ApiException {
+        dto.addUser(userForm);
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -45,7 +38,7 @@ public class UserController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ApiOperation(value = "get a user by id")
-    public UserData getUserById(@RequestParam long id) {
+    public UserData getUserById(@RequestParam Long id) {
         return dto.getUserById(id);
     }
 
