@@ -1,6 +1,5 @@
 package com.increff.assure.dao;
 
-import com.increff.assure.exception.ApiException;
 import com.increff.assure.pojo.BinPojo;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,11 +32,4 @@ public class BinDao extends AbstractDao {
         return getSingle(query);
     }
 
-    @Transactional(readOnly = true)
-    public void throwsIfBinIdNotFound(Long id) throws ApiException {
-        BinPojo p = select(id);
-        if (p == null) {
-            throw new ApiException("bin with id: " + id + " not found");
-        }
-    }
 }

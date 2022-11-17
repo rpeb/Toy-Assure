@@ -1,10 +1,10 @@
 package com.increff.assure.controller;
 
 import com.increff.assure.dto.ProductDto;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ProductData;
-import com.increff.assure.model.ProductDetailsUpdateForm;
-import com.increff.assure.model.ProductForm;
+import com.increff.assure.model.data.ProductData;
+import com.increff.assure.model.form.ProductDetailsUpdateForm;
+import com.increff.assure.model.form.ProductForm;
+import com.increff.commons.exception.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

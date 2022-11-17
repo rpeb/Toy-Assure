@@ -1,10 +1,10 @@
 package com.increff.assure.dto.helper;
 
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ProductData;
-import com.increff.assure.model.ProductDetailsUpdateForm;
-import com.increff.assure.model.ProductForm;
+import com.increff.assure.model.data.ProductData;
+import com.increff.assure.model.form.ProductDetailsUpdateForm;
+import com.increff.assure.model.form.ProductForm;
 import com.increff.assure.pojo.ProductPojo;
+import com.increff.commons.exception.ApiException;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,5 @@
 package com.increff.assure.pojo;
 
-import com.increff.assure.model.TableConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

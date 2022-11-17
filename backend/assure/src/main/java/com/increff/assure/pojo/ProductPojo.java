@@ -1,6 +1,5 @@
 package com.increff.assure.pojo;
 
-import com.increff.assure.model.TableConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -27,12 +26,10 @@ public class ProductPojo extends AbstractPojo {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
     private String brandId;
 
     @Column(nullable = false)
     private Double mrp;
 
-    @Column(nullable = false)
     private String description;
 }

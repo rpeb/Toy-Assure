@@ -1,7 +1,7 @@
 package com.increff.assure.util;
 
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ErrorData;
+import com.increff.assure.model.data.ErrorData;
+import com.increff.commons.exception.ApiException;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;

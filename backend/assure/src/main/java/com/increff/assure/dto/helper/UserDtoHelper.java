@@ -1,10 +1,10 @@
 package com.increff.assure.dto.helper;
 
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.UserData;
-import com.increff.assure.model.UserForm;
+import com.increff.assure.model.data.UserData;
+import com.increff.assure.model.form.UserForm;
 import com.increff.assure.pojo.UserPojo;
 import com.increff.assure.pojo.UserType;
+import com.increff.commons.exception.ApiException;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,12 +1,12 @@
 package com.increff.assure.dto;
 
-import com.increff.assure.api.ProductService;
+import com.increff.assure.api.ProductApi;
 import com.increff.assure.dto.helper.ProductDtoHelper;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ProductData;
-import com.increff.assure.model.ProductDetailsUpdateForm;
-import com.increff.assure.model.ProductForm;
+import com.increff.assure.model.data.ProductData;
+import com.increff.assure.model.form.ProductDetailsUpdateForm;
+import com.increff.assure.model.form.ProductForm;
 import com.increff.assure.pojo.ProductPojo;
+import com.increff.commons.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,29 +17,29 @@ import java.util.List;
 public class ProductDto {
 
     @Autowired
-    private ProductService service;
+    private ProductApi productApi;
 
     @Transactional
     public void bulkUpload(List<ProductForm> productFormList, Long clientId) throws ApiException {
         ProductDtoHelper.normalizeList(productFormList);
         List<ProductPojo> productPojos = ProductDtoHelper.convertListOfProductFormToListOfProductPojo(productFormList, clientId);
-        service.bulkUpload(productPojos);
+        productApi.bulkUpload(productPojos);
     }
 
     @Transactional
     public void update(ProductDetailsUpdateForm updateForm) throws ApiException {
         ProductDtoHelper.normalizeUpdateForm(updateForm);
-        service.update(updateForm);
+        productApi.update(updateForm);
     }
 
     @Transactional(readOnly = true)
     public List<ProductData> getAll() {
-        return ProductDtoHelper.convertListOfProductPojoToListOfProductData(service.getAll());
+        return ProductDtoHelper.convertListOfProductPojoToListOfProductData(productApi.getAll());
     }
 
     @Transactional(readOnly = true)
     public ProductData getById(Long globalSkuId) throws ApiException {
-        return ProductDtoHelper.convertProductPojoToProductData(service.getById(globalSkuId));
+        return ProductDtoHelper.convertProductPojoToProductData(productApi.getById(globalSkuId));
     }
 
 }

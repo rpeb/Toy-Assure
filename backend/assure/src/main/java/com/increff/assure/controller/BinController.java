@@ -1,8 +1,8 @@
 package com.increff.assure.controller;
 
 import com.increff.assure.dto.BinDto;
-import com.increff.assure.exception.ApiException;
 import com.increff.assure.pojo.BinPojo;
+import com.increff.commons.exception.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

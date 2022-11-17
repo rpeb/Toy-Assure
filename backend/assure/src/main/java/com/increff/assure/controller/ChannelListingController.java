@@ -1,8 +1,8 @@
 package com.increff.assure.controller;
 
 import com.increff.assure.dto.ChannelListingDto;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ChannelListingUploadForm;
+import com.increff.assure.model.form.ChannelListingUploadForm;
+import com.increff.commons.exception.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

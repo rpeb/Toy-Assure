@@ -1,23 +1,42 @@
 package com.increff.assure.dto.helper;
 
-import com.increff.assure.api.UserService;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.BinSkuForm;
+import com.increff.assure.api.BinApi;
+import com.increff.assure.api.BinSkuApi;
+import com.increff.assure.api.ProductApi;
+import com.increff.assure.api.UserApi;
+import com.increff.assure.model.data.BinSkuData;
+import com.increff.assure.model.data.ErrorData;
+import com.increff.assure.model.form.BinSkuForm;
+import com.increff.assure.model.form.BinSkuUpdateForm;
 import com.increff.assure.pojo.BinSkuPojo;
-import com.increff.assure.pojo.UserPojo;
-import com.increff.assure.pojo.UserType;
+import com.increff.assure.pojo.InventoryPojo;
+import com.increff.assure.pojo.ProductPojo;
+import com.increff.assure.util.ValidationUtil;
+import com.increff.commons.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.summingLong;
 
 @Service
 public class BinSkuDtoHelper {
 
     @Autowired
-    private UserService userService;
+    private UserApi userApi;
+
+    @Autowired
+    private BinApi binApi;
+
+    @Autowired
+    private ProductApi productApi;
+
+    @Autowired
+    private BinSkuApi binSkuApi;
 
     public static void normalizeList(List<BinSkuForm> BinSkuFormList) throws ApiException {
         for (BinSkuForm f : BinSkuFormList) {
@@ -52,12 +71,11 @@ public class BinSkuDtoHelper {
     }
 
     public static BinSkuPojo convertBinSkuFormToBinSkuPojo(BinSkuForm f, Long globalSkuId) throws ApiException {
-//        normalize(f);
-        BinSkuPojo p = new BinSkuPojo();
-        p.setBinId(f.getBinId());
-        p.setQuantity(f.getQuantity());
-        p.setGlobalSkuId(globalSkuId);
-        return p;
+        BinSkuPojo binSkuPojo = new BinSkuPojo();
+        binSkuPojo.setBinId(f.getBinId());
+        binSkuPojo.setGlobalSkuId(globalSkuId);
+        binSkuPojo.setQuantity(f.getQuantity());
+        return binSkuPojo;
     }
 
     public static void checkDuplicateClientSkuIds(List<BinSkuForm> BinSkuFormList) throws ApiException {
@@ -71,10 +89,111 @@ public class BinSkuDtoHelper {
         }
     }
 
-    public void checkIfClientExists(Long clientId) throws ApiException {
-        UserPojo userPojo = userService.getUserById(clientId);
-        if (userPojo == null || userPojo.getType() != UserType.CLIENT) {
-            throw new ApiException("invalid clientId: " + clientId);
+    public static List<BinSkuPojo> convertListOfBinSkuFormToListOfBinSkuPojo(List<BinSkuForm> binSkuFormList, Map<String, Long> clientSkuIdToGlobalSkuIdMap) throws ApiException {
+        List<BinSkuPojo> binSkuPojoList = new ArrayList<>();
+        for (BinSkuForm binSkuForm : binSkuFormList) {
+            binSkuPojoList.add(convertBinSkuFormToBinSkuPojo(binSkuForm, clientSkuIdToGlobalSkuIdMap.get(binSkuForm.getClientSkuId())));
+        }
+        return binSkuPojoList;
+    }
+
+    public static List<InventoryPojo> convertListOfBinSkuFormToListOfInventoryPojo(List<BinSkuForm> binSkuFormList, Map<String, Long> clientSkuIdToGlobalSkuIdMap) {
+        List<InventoryPojo> inventoryPojoList = new ArrayList<>();
+        Map<String, Long> clientSkuIdToQuantityMap = binSkuFormList.stream().collect(groupingBy(BinSkuForm::getClientSkuId, summingLong(BinSkuForm::getQuantity)));
+        for (String clientSkuId : clientSkuIdToQuantityMap.keySet()) {
+            InventoryPojo inventoryPojo = new InventoryPojo();
+            inventoryPojo.setAvailableQuantity(clientSkuIdToQuantityMap.get(clientSkuId));
+            inventoryPojo.setGlobalSkuId(clientSkuIdToGlobalSkuIdMap.get(clientSkuId));
+            inventoryPojoList.add(inventoryPojo);
+        }
+        return inventoryPojoList;
+    }
+
+    public static List<BinSkuData> convertListOfBinSkuPojoToListOfBinSkuData(List<BinSkuPojo> binSkuPojoList) {
+        return binSkuPojoList
+                .stream()
+                .map(BinSkuDtoHelper::convertBinSkuPojoToBinSkuData)
+                .collect(Collectors.toList());
+    }
+
+    private static BinSkuData convertBinSkuPojoToBinSkuData(BinSkuPojo binSkuPojo) {
+        BinSkuData binSkuData = new BinSkuData();
+        binSkuData.setBinId(binSkuPojo.getBinId());
+        binSkuData.setGlobalSkuId(binSkuPojo.getGlobalSkuId());
+        binSkuData.setQuantity(binSkuPojo.getQuantity());
+        binSkuData.setId(binSkuPojo.getId());
+        return binSkuData;
+    }
+
+    public static void validate(BinSkuUpdateForm binSkuUpdateForm) throws ApiException {
+        if (isNull(binSkuUpdateForm)) {
+            throw new ApiException("bin sku update form cannot be empty");
+        }
+        if (binSkuUpdateForm.getQuantity() == null) {
+            throw new ApiException("quantity not present");
+        }
+        if (binSkuUpdateForm.getQuantity() < 0) {
+            throw new ApiException("quantity cannot be negative");
         }
     }
+
+    public BinSkuPojo convertBinSkuUpdateFormToBinSkuPojo(BinSkuUpdateForm binSkuUpdateForm) {
+        BinSkuPojo pojo = new BinSkuPojo();
+        pojo.setQuantity(binSkuUpdateForm.getQuantity());
+        return pojo;
+    }
+
+    public void throwsIfInvalidBinId(List<BinSkuForm> binSkuFormList) throws ApiException {
+        List<ErrorData> errorDataList = new ArrayList<>();
+        Long row = 1L;
+        for (BinSkuForm binSkuForm : binSkuFormList) {
+            if (binApi.getBinById(binSkuForm.getBinId()) == null) {
+                errorDataList.add(new ErrorData(row, "invalid bin id: " + binSkuForm.getBinId()));
+            }
+            row++;
+        }
+        ValidationUtil.throwsIfNotEmpty(errorDataList);
+    }
+
+    public Map<String, Long> getClientSkuIdToQuantityMap(List<BinSkuForm> binSkuFormList) throws ApiException {
+        return binSkuFormList
+                .stream()
+                .collect(Collectors.groupingBy(BinSkuForm::getClientSkuId, Collectors.summingLong(BinSkuForm::getQuantity)));
+    }
+
+    public void throwsIfInvalidClientId(Long clientId) throws ApiException {
+        userApi.throwsIfInvalidClientId(clientId);
+    }
+
+    public List<Long> getListofBinIds(List<BinSkuForm> binSkuFormList) {
+        return binSkuFormList
+                .stream()
+                .map(BinSkuForm::getBinId)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Long> getClientSkuIdToGlobalSkuIdMap(List<BinSkuForm> binSkuFormList, Long clientId) throws ApiException {
+        List<String> clientSkuIdList = binSkuFormList.stream().map(BinSkuForm::getClientSkuId).collect(Collectors.toList());
+        HashMap<String, Long> clientToGlobalSkuIdMap = new HashMap<>();
+        for (String clientSkuId : clientSkuIdList) {
+            ProductPojo productPojo = productApi.getByClientIdAndClientSkuId(clientId, clientSkuId);
+            if (!isNull(productPojo)) {
+                clientToGlobalSkuIdMap.put(productPojo.getClientSkuId(), productPojo.getGlobalSkuId());
+            }
+        }
+        return clientToGlobalSkuIdMap;
+    }
+
+    public static void throwsIfInvalidClientSkuId(Map<String, Long> clientToGlobalSkuIdMap, List<BinSkuForm> binSkuFormList) throws ApiException {
+        Long row = 1L;
+        List<ErrorData> errorDataList = new ArrayList<>();
+        for (BinSkuForm binSkuItemForm : binSkuFormList) {
+            if (!clientToGlobalSkuIdMap.containsKey(binSkuItemForm.getClientSkuId())) {
+                errorDataList.add(new ErrorData(row, "ClientSkuId: " + binSkuItemForm.getClientSkuId() + " does not exist"));
+            }
+            row++;
+        }
+        ValidationUtil.throwsIfNotEmpty(errorDataList);
+    }
+
 }

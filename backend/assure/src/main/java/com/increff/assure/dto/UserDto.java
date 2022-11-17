@@ -1,11 +1,11 @@
 package com.increff.assure.dto;
 
-import com.increff.assure.api.UserService;
+import com.increff.assure.api.UserApi;
 import com.increff.assure.dto.helper.UserDtoHelper;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.UserData;
-import com.increff.assure.model.UserForm;
+import com.increff.assure.model.data.UserData;
+import com.increff.assure.model.form.UserForm;
 import com.increff.assure.pojo.UserPojo;
+import com.increff.commons.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,27 +17,27 @@ public class UserDto {
 
 
     @Autowired
-    private UserService service;
+    private UserApi userApi;
 
     @Transactional(readOnly = true)
     public List<UserData> getAllUsers() {
-        return UserDtoHelper.convertListOfUserPojoToListOfUserData(service.getAllUsers());
+        return UserDtoHelper.convertListOfUserPojoToListOfUserData(userApi.getAllUsers());
     }
 
     @Transactional
     public void addUser(UserForm userForm) throws ApiException {
         UserDtoHelper.normalize(userForm);
         UserPojo userPojo = UserDtoHelper.convertUserFormtoUserPojo(userForm);
-        service.addUser(userPojo);
+        userApi.addUser(userPojo);
     }
 
     @Transactional(readOnly = true)
     public UserData getUserById(Long id) {
-        return UserDtoHelper.convertUserPojoToUserData(service.getUserById(id));
+        return UserDtoHelper.convertUserPojoToUserData(userApi.getUserById(id));
     }
 
     @Transactional
     public void updateUserName(UserPojo userPojo, String name) {
-        service.updateUserName(userPojo, name);
+        userApi.updateUserName(userPojo, name);
     }
 }

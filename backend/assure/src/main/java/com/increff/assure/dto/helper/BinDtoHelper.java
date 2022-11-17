@@ -1,6 +1,6 @@
 package com.increff.assure.dto.helper;
 
-import com.increff.assure.exception.ApiException;
+import com.increff.commons.exception.ApiException;
 
 public class BinDtoHelper {
     public static void validate(Long numberOfBins) throws ApiException {

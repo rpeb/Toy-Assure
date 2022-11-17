@@ -1,6 +1,6 @@
 package com.increff.assure.dao;
 
-import com.increff.assure.model.ProductDetailsUpdateForm;
+import com.increff.assure.model.form.ProductDetailsUpdateForm;
 import com.increff.assure.pojo.ProductPojo;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

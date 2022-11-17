@@ -2,9 +2,9 @@ package com.increff.assure.controller;
 
 import com.increff.assure.dto.UserDto;
 import com.increff.assure.dto.helper.UserDtoHelper;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.UserData;
-import com.increff.assure.model.UserForm;
+import com.increff.assure.model.data.UserData;
+import com.increff.assure.model.form.UserForm;
+import com.increff.commons.exception.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.LogManager;

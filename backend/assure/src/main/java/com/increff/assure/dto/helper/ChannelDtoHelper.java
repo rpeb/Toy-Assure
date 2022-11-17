@@ -1,8 +1,8 @@
 package com.increff.assure.dto.helper;
 
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ChannelForm;
+import com.increff.assure.model.form.ChannelForm;
 import com.increff.assure.pojo.ChannelPojo;
+import com.increff.commons.exception.ApiException;
 
 public class ChannelDtoHelper {
 

@@ -1,13 +1,17 @@
 package com.increff.assure.dto;
 
-import com.increff.assure.api.ChannelListingService;
-import com.increff.assure.api.ChannelService;
-import com.increff.assure.api.ProductService;
-import com.increff.assure.api.UserService;
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.ChannelListingForm;
-import com.increff.assure.model.ChannelListingUploadForm;
-import com.increff.assure.pojo.*;
+import com.increff.assure.api.ChannelApi;
+import com.increff.assure.api.ChannelListingApi;
+import com.increff.assure.api.ProductApi;
+import com.increff.assure.api.UserApi;
+import com.increff.assure.model.form.ChannelListingForm;
+import com.increff.assure.model.form.ChannelListingUploadForm;
+import com.increff.assure.pojo.ChannelListingPojo;
+import com.increff.assure.pojo.ChannelPojo;
+import com.increff.assure.pojo.ProductPojo;
+import com.increff.commons.exception.ApiException;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,41 +19,41 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import static java.util.Objects.isNull;
 
 @Service
 public class ChannelListingDto {
-    @Autowired
-    private ChannelListingService service;
+
+    public static final Logger LOGGER = LogManager.getLogger(ChannelListingDto.class);
 
     @Autowired
-    private ProductService productService;
+    private ChannelListingApi channelListingApi;
 
     @Autowired
-    private ChannelService channelService;
+    private ProductApi productApi;
 
     @Autowired
-    private UserService userService;
+    private ChannelApi channelApi;
+
+    @Autowired
+    private UserApi userApi;
 
     @Transactional(rollbackFor = ApiException.class)
     public void add(ChannelListingUploadForm channelListingUploadForm) throws ApiException {
         validateAndNormalizeList(channelListingUploadForm);
         throwsIfInvalidChannelId(channelListingUploadForm.getChannelId());
-        throwsIfInvalidClientId(channelListingUploadForm.getClientId());
+        userApi.throwsIfInvalidClientId(channelListingUploadForm.getClientId());
         List<ChannelListingPojo> channelListingPojos = convertChannelListingUploadFormToChannelListingPojoList(channelListingUploadForm);
-        service.add(channelListingPojos);
-    }
-
-    private void throwsIfInvalidClientId(Long clientId) throws ApiException {
-        UserPojo userPojo = userService.getUserById(clientId);
-        if (userPojo == null || userPojo.getType() != UserType.CLIENT) {
-            throw new ApiException("invalid client id");
-        }
+        channelListingApi.add(channelListingPojos);
     }
 
     private void throwsIfInvalidChannelId(Long channelId) throws ApiException {
-        ChannelPojo channelPojo = channelService.get(channelId);
-        if (channelPojo == null) {
-            throw new ApiException("invalid channel id");
+        ChannelPojo channelPojo = channelApi.get(channelId);
+        if (isNull(channelPojo) ||
+                Objects.equals(channelPojo.getId(), channelApi.getInternalChannelInfo().getId())) {
+            throw new ApiException("invalid channel id: " + channelId);
         }
     }
 
@@ -66,7 +70,7 @@ public class ChannelListingDto {
         if (CollectionUtils.isEmpty(channelListingUploadForm.getChannelListingFormList())) {
             throw new ApiException("channel list is empty");
         }
-        for (ChannelListingForm channelListingForm: channelListingUploadForm.getChannelListingFormList()) {
+        for (ChannelListingForm channelListingForm : channelListingUploadForm.getChannelListingFormList()) {
             normalize(channelListingForm);
         }
     }
@@ -74,6 +78,7 @@ public class ChannelListingDto {
     private void normalize(ChannelListingForm channelListingForm) {
         channelListingForm.setChannelSkuId(channelListingForm.getChannelSkuId().trim().toLowerCase());
         channelListingForm.setClientSkuId(channelListingForm.getClientSkuId().trim().toLowerCase());
+//        LOGGER.info("channelListingForm = " + channelListingForm);
     }
 
     public List<ChannelListingPojo> convertChannelListingUploadFormToChannelListingPojoList(ChannelListingUploadForm channelListingUploadForm) throws ApiException {
@@ -87,10 +92,10 @@ public class ChannelListingDto {
         return channelListingPojos;
     }
 
-    private ChannelListingPojo convertChannelListingFormToChannelListingPojo(ChannelListingForm channelListingForm, Long channelId, Long clientId) throws ApiException {
+    private ChannelListingPojo convertChannelListingFormToChannelListingPojo(ChannelListingForm channelListingForm, Long clientId, Long channelId) throws ApiException {
         ChannelListingPojo channelListingPojo = new ChannelListingPojo();
-        channelListingPojo.setChannelId(channelId);
         channelListingPojo.setClientId(clientId);
+        channelListingPojo.setChannelId(channelId);
         channelListingPojo.setChannelSkuId(channelListingForm.getChannelSkuId());
         channelListingPojo.setGlobalSkuId(getGlobalSkuId(clientId, channelListingForm.getClientSkuId()));
         return channelListingPojo;
@@ -98,7 +103,7 @@ public class ChannelListingDto {
 
     @Transactional(rollbackFor = ApiException.class)
     private Long getGlobalSkuId(Long clientId, String clientSkuId) throws ApiException {
-        ProductPojo productPojo = productService.getByClientIdAndClientSkuId(clientId, clientSkuId);
+        ProductPojo productPojo = productApi.getByClientIdAndClientSkuId(clientId, clientSkuId);
         return productPojo.getGlobalSkuId();
     }
 }

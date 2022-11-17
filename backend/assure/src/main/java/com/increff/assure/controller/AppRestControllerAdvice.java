@@ -1,7 +1,7 @@
 package com.increff.assure.controller;
 
-import com.increff.assure.exception.ApiException;
-import com.increff.assure.model.MessageData;
+import com.increff.assure.model.data.MessageData;
+import com.increff.commons.exception.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;

@@ -1,6 +1,7 @@
 package com.increff.assure.dao;
 
 import com.increff.assure.pojo.InventoryPojo;
+import com.increff.commons.exception.ApiException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +17,7 @@ public class InventoryDao extends AbstractDao {
     public static final String SELECT_BY_GLOBAL_SKUID = "select p from InventoryPojo p " +
             "where globalSkuId=:globalSkuId";
 
-    @Transactional
+    @Transactional(rollbackFor = ApiException.class)
     public void insert(InventoryPojo p) {
         em().persist(p);
     }
@@ -41,7 +42,7 @@ public class InventoryDao extends AbstractDao {
         return getSingle(query);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = ApiException.class)
     public void update(InventoryPojo inventoryPojo, Long availableQuantity) {
         inventoryPojo.setAvailableQuantity(inventoryPojo.getAvailableQuantity() + availableQuantity);
     }
