@@ -92,7 +92,8 @@ public class BinSkuDtoHelper {
     public static List<BinSkuPojo> convertListOfBinSkuFormToListOfBinSkuPojo(List<BinSkuForm> binSkuFormList, Map<String, Long> clientSkuIdToGlobalSkuIdMap) throws ApiException {
         List<BinSkuPojo> binSkuPojoList = new ArrayList<>();
         for (BinSkuForm binSkuForm : binSkuFormList) {
-            binSkuPojoList.add(convertBinSkuFormToBinSkuPojo(binSkuForm, clientSkuIdToGlobalSkuIdMap.get(binSkuForm.getClientSkuId())));
+            Long globalSkuId = clientSkuIdToGlobalSkuIdMap.get(binSkuForm.getClientSkuId());
+            binSkuPojoList.add(convertBinSkuFormToBinSkuPojo(binSkuForm, globalSkuId));
         }
         return binSkuPojoList;
     }
@@ -177,18 +178,16 @@ public class BinSkuDtoHelper {
         HashMap<String, Long> clientToGlobalSkuIdMap = new HashMap<>();
         for (String clientSkuId : clientSkuIdList) {
             ProductPojo productPojo = productApi.getByClientIdAndClientSkuId(clientId, clientSkuId);
-            if (!isNull(productPojo)) {
-                clientToGlobalSkuIdMap.put(productPojo.getClientSkuId(), productPojo.getGlobalSkuId());
-            }
+            clientToGlobalSkuIdMap.put(productPojo.getClientSkuId(), productPojo.getGlobalSkuId());
         }
         return clientToGlobalSkuIdMap;
     }
 
-    public static void throwsIfInvalidClientSkuId(Map<String, Long> clientToGlobalSkuIdMap, List<BinSkuForm> binSkuFormList) throws ApiException {
+    public void throwsIfInvalidClientSkuId(Long clientId, List<BinSkuForm> binSkuFormList) throws ApiException {
         Long row = 1L;
         List<ErrorData> errorDataList = new ArrayList<>();
         for (BinSkuForm binSkuItemForm : binSkuFormList) {
-            if (!clientToGlobalSkuIdMap.containsKey(binSkuItemForm.getClientSkuId())) {
+            if (isNull(productApi.getByClientIdAndClientSkuId(clientId, binSkuItemForm.getClientSkuId()))) {
                 errorDataList.add(new ErrorData(row, "ClientSkuId: " + binSkuItemForm.getClientSkuId() + " does not exist"));
             }
             row++;

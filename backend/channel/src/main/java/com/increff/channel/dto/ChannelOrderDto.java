@@ -21,25 +21,10 @@ public class ChannelOrderDto {
     private String assureBaseUrl;
 
     public void createChannelOrder(ChannelOrderForm orderForm) throws ApiException {
-        validate(orderForm);
         try {
             restTemplate.postForObject(assureBaseUrl + "/order/channel", orderForm, Void.class);
         } catch (RestClientException e) {
             throw new ApiException(e.getMessage());
-        }
-    }
-
-    private void validate(ChannelOrderForm orderForm) throws ApiException {
-        if (isNull(orderForm)) {
-            throw new ApiException("order form cannot be empty");
-        }
-        if (isNull(orderForm.getChannelId())) {
-            throw new ApiException("channel id cannot be empty");
-        }
-        for (ChannelOrderItemForm itemForm : orderForm.getChannelOrderItems()) {
-            if (isNull(itemForm.getChannelSkuId())) {
-                throw new ApiException("channel sku id required for channel order");
-            }
         }
     }
 

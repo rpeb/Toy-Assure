@@ -11,7 +11,7 @@ import javax.persistence.TypedQuery;
 @Transactional(rollbackFor = ApiException.class)
 public class ChannelListingDao extends AbstractDao {
 
-    public static final String SELECT_BY_CHANNELID_CHANNELSKU_CLIENTID = "select c from ChannelListingPojo " +
+    public static final String SELECT_BY_CHANNELID_CHANNELSKU_CLIENTID = "select c from ChannelListingPojo c " +
             "where channelId=:channelId and channelSkuId=:channelSkuId and clientId=:clientId";
 
     public void insert(ChannelListingPojo channelListingPojo) {

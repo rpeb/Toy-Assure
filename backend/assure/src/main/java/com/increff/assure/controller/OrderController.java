@@ -31,6 +31,12 @@ public class OrderController {
         dto.createChannelOrder(orderForm);
     }
 
+    @RequestMapping(value = "/allocate/{orderId}", method = RequestMethod.PUT)
+    @ApiOperation(value = "allocate an order")
+    public void allocateOrder(@PathVariable Long orderId) throws ApiException {
+        dto.allocateOrder(orderId);
+    }
+
     @RequestMapping(value = "/invoice/{orderId}", method = RequestMethod.GET)
     @ApiOperation(value = "get invoice for a particular order")
     public String getInvoice(@PathVariable Long orderId) throws ApiException, IOException, TransformerException {

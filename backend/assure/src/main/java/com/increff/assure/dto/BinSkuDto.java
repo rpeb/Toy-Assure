@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +25,7 @@ public class BinSkuDto {
     private BinSkuApi binSkuApi;
 
     @Autowired
-    private InventoryApi inventoryApi;
+    private InventoryDto inventoryDto;
 
     @Autowired
     private BinSkuDtoHelper binSkuDtoHelper;
@@ -34,23 +36,16 @@ public class BinSkuDto {
         BinSkuDtoHelper.checkDuplicateClientSkuIds(binSkuFormList);
         binSkuDtoHelper.throwsIfInvalidBinId(binSkuFormList);
         binSkuDtoHelper.throwsIfInvalidClientId(clientId);
+        binSkuDtoHelper.throwsIfInvalidClientSkuId(clientId, binSkuFormList);
         Map<String, Long> clientSkuIdToGlobalSkuIdMap = binSkuDtoHelper
                 .getClientSkuIdToGlobalSkuIdMap(binSkuFormList, clientId);
-        BinSkuDtoHelper.throwsIfInvalidClientSkuId(clientSkuIdToGlobalSkuIdMap, binSkuFormList);
-//        Map<String, Long> clientSkuIdToQuantityMap = binSkuDtoHelper
-//                .getClientSkuIdToQuantityMap(binSkuFormList);
         List<BinSkuPojo> binSkuPojos = BinSkuDtoHelper
                 .convertListOfBinSkuFormToListOfBinSkuPojo(
                         binSkuFormList,
                         clientSkuIdToGlobalSkuIdMap
                 );
-        binSkuApi.upload(binSkuPojos);
-        List<InventoryPojo> inventoryPojos = BinSkuDtoHelper
-                .convertListOfBinSkuFormToListOfInventoryPojo(
-                        binSkuFormList,
-                        clientSkuIdToGlobalSkuIdMap
-                );
-        inventoryApi.upload(inventoryPojos);
+        List<BinSkuPojo> uploadedBinSkus = binSkuApi.upload(binSkuPojos);
+        inventoryDto.updateInventory(uploadedBinSkus);
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +55,27 @@ public class BinSkuDto {
 
     public void updateQuantity(Long id, BinSkuUpdateForm binSkuUpdateForm) throws ApiException {
         BinSkuDtoHelper.validate(binSkuUpdateForm);
-        binSkuApi.updateQuantity(id, binSkuDtoHelper.convertBinSkuUpdateFormToBinSkuPojo(binSkuUpdateForm));
+        binSkuApi.updateQuantity(id, binSkuDtoHelper.convertBinSkuUpdateFormToBinSkuPojo(binSkuUpdateForm).getQuantity());
+    }
+
+    public void updateAvailableQuantity(Long globalSkuId, Long quantity) {
+        List<BinSkuPojo> binSkuPojos = binSkuApi.getByGlobalSkuId(globalSkuId);
+        Collections.sort(binSkuPojos, Comparator.comparing(BinSkuPojo::getQuantity));
+        Collections.reverse(binSkuPojos);
+        int i = 0;
+        while (quantity >= 0) {
+            BinSkuPojo binSkuPojo = binSkuPojos.get(i);
+            if (binSkuPojo.getQuantity() <= quantity) {
+                quantity -= binSkuPojo.getQuantity();
+                binSkuPojo.setQuantity(0L);
+            } else {
+                binSkuPojo.setQuantity(binSkuPojo.getQuantity() - quantity);
+                quantity = 0L;
+            }
+            i++;
+            if (i == binSkuPojos.size()) {
+                break;
+            }
+        }
     }
 }

@@ -33,7 +33,11 @@ public class OrderItemApi {
         }
     }
 
-    public List<OrderItemData> getOrderItemsByOrderId(Long orderId) throws ApiException {
+    public List<OrderItemPojo> getOrderItemsByOrderId(Long orderId) throws ApiException {
+        return orderItemDao.select(orderId);
+    }
+
+    public List<OrderItemData> getOrderItemDataListByOrderId(Long orderId) throws ApiException {
         List<OrderItemPojo> orderItemPojos = orderItemDao.select(orderId);
         return convertOrderItemPojoListToOrderItemDataList(orderItemPojos);
     }
@@ -62,4 +66,7 @@ public class OrderItemApi {
         return orderItemDao.select(orderItemPojo.getOrderId(), orderItemPojo.getGlobalSkuId()) != null;
     }
 
+    public void updatedAllocatedQuantity(OrderItemPojo orderItemPojo, Long orderedQuantity) {
+        orderItemPojo.setAllocatedQuantity(orderItemPojo.getAllocatedQuantity() + orderedQuantity);
+    }
 }

@@ -2,6 +2,7 @@ package com.increff.assure.dao;
 
 import com.increff.assure.pojo.UserPojo;
 import com.increff.assure.pojo.UserType;
+import com.increff.commons.exception.ApiException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +10,7 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Repository
+@Transactional(rollbackFor = ApiException.class)
 public class UserDao extends AbstractDao {
 
     private static final String SELECT_BY_ID = "select p from UserPojo p where id=:id";
@@ -17,7 +19,6 @@ public class UserDao extends AbstractDao {
             "where name=:name and type=:type";
 
 
-    @Transactional
     public void insert(UserPojo p) {
         em().persist(p);
     }
@@ -44,7 +45,6 @@ public class UserDao extends AbstractDao {
         return query.getResultList();
     }
 
-    @Transactional
     public void updateUserName(UserPojo p, String name) {
         UserPojo userPojo = select(p.getName(), p.getType());
         userPojo.setName(name);

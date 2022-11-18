@@ -2,7 +2,9 @@ package com.increff.assure.api;
 
 import com.increff.assure.dao.OrderDao;
 import com.increff.assure.model.data.OrderData;
+import com.increff.assure.pojo.OrderItemPojo;
 import com.increff.assure.pojo.OrderPojo;
+import com.increff.assure.pojo.OrderStatus;
 import com.increff.commons.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,12 +46,16 @@ public class OrderApi {
         return data;
     }
 
+    public OrderPojo getOrderByClientIdChannelIdChannelOrderId(Long clientId, Long channelId, String channelOrderId) {
+        return orderDao.select(clientId, channelId, channelOrderId);
+    }
+
     private boolean checkIfOrderWithSameUniqueConstraintsFound(OrderPojo orderPojo) throws ApiException {
         Long clientId = orderPojo.getClientId();
         Long channelId = orderPojo.getChannelId();
         String channelOrderId = orderPojo.getChannelOrderId();
         boolean found = false;
-        if (orderDao.select(clientId, channelId, channelOrderId) != null) {
+        if (getOrderByClientIdChannelIdChannelOrderId(clientId, channelId, channelOrderId) != null) {
             found = true;
         }
         if (orderDao.select(channelOrderId) != null) {
@@ -60,5 +66,10 @@ public class OrderApi {
 
     public void setInvoiceUrl(Long orderId, String url) {
         orderDao.update(orderId, url);
+    }
+
+    public void updateOrderStatus(Long orderId, OrderStatus status) {
+        OrderPojo orderPojo = getOrderById(orderId);
+        orderPojo.setStatus(status);
     }
 }

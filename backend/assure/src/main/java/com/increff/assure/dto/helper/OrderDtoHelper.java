@@ -1,26 +1,70 @@
 package com.increff.assure.dto.helper;
 
 
+import com.increff.assure.api.*;
+import com.increff.assure.model.data.ErrorData;
+import com.increff.assure.model.data.InvoiceData;
+import com.increff.assure.model.data.OrderItemData;
 import com.increff.assure.model.form.InternalOrderForm;
 import com.increff.assure.model.form.InternalOrderItemForm;
-import com.increff.assure.pojo.OrderPojo;
-import com.increff.assure.pojo.OrderStatus;
+import com.increff.assure.pojo.*;
+import com.increff.assure.util.InvoiceUtil;
+import com.increff.assure.util.ValidationUtil;
 import com.increff.commons.exception.ApiException;
 import com.increff.commons.model.form.ChannelOrderForm;
 import com.increff.commons.model.form.ChannelOrderItemForm;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 import static java.util.Objects.isNull;
 
+@Service
 public class OrderDtoHelper {
 
-    public static OrderPojo convertInternalOrderFormToOrderPojo(InternalOrderForm orderForm) {
+    @Autowired
+    private ChannelApi channelApi;
+
+    @Autowired
+    private ProductApi productApi;
+
+    @Autowired
+    private OrderApi orderApi;
+
+    @Autowired
+    private UserApi userApi;
+
+    @Autowired
+    private InventoryApi inventoryApi;
+
+    @Autowired
+    private OrderItemApi orderItemApi;
+
+    public void throwsIfInvalidClientSkuId(Long clientId, List<String> clientSkuList) throws ApiException {
+        Long row = 1L;
+        List<ErrorData> errorDataList = new ArrayList<>();
+        for (String clientSkuId : clientSkuList) {
+            ProductPojo productPojo = productApi.getByClientIdAndClientSkuId(clientId, clientSkuId);
+            if (productPojo == null) {
+                errorDataList.add(new ErrorData(
+                        row,
+                        "invalid clientSkuId: " + clientSkuId)
+                );
+            }
+            row++;
+        }
+        ValidationUtil.throwsIfNotEmpty(errorDataList);
+    }
+
+    public OrderPojo convertInternalOrderFormToOrderPojo(InternalOrderForm orderForm) {
         OrderPojo pojo = new OrderPojo();
-        pojo.setChannelId(null);
+        pojo.setChannelId(channelApi.getInternalChannelInfo().getId());
         pojo.setChannelOrderId(orderForm.getChannelOrderId());
         pojo.setStatus(OrderStatus.CREATED);
         pojo.setClientId(orderForm.getClientId());
@@ -151,5 +195,70 @@ public class OrderDtoHelper {
         pojo.setChannelOrderId(orderForm.getChannelOrderId());
         pojo.setClientId(orderForm.getClientId());
         return pojo;
+    }
+
+    public void throwsIfInternalChannelIdForChannelOrder(Long channelId) throws ApiException {
+        if (channelApi.getInternalChannelInfo().getId().equals(channelId)) {
+            throw new ApiException("invalid channel id: " + channelId + " for channel order");
+        }
+    }
+
+    public void throwsIfOrderStatusNotCreated(Long orderId) throws ApiException {
+        OrderPojo pojo = orderApi.getOrderById(orderId);
+        if (isNull(pojo)) {
+            throw new ApiException("order does not exist");
+        }
+        if (!pojo.getStatus().equals(OrderStatus.CREATED)) {
+            throw new ApiException("cannot allocate this order");
+        }
+    }
+
+    public String getInvoice(Long orderId) throws ApiException, IOException, TransformerException {
+        OrderPojo orderPojo = orderApi.getOrderById(orderId);
+        if (isNull(orderPojo)) {
+            throw new ApiException("invalid orderid: " + orderId);
+        }
+        if (!isNull(orderPojo.getInvoiceUrl())) {
+            return orderPojo.getInvoiceUrl();
+        }
+        String url = createPdfAndGetUrl(orderId);
+        orderApi.setInvoiceUrl(orderId, url);
+        return url;
+    }
+
+    private String createPdfAndGetUrl(Long orderId) throws ApiException, IOException, TransformerException {
+        OrderPojo orderPojo = orderApi.getOrderById(orderId);
+        if (isNull(orderPojo)) {
+            throw new ApiException("invalid orderid: " + orderId);
+        }
+        List<OrderItemData> orderItemDataList = orderItemApi.getOrderItemDataListByOrderId(orderId);
+
+        ZonedDateTime time = orderPojo.getCreatedAt();
+        double total = 0.0;
+        for (OrderItemData orderItemData : orderItemDataList) {
+            total += orderItemData.getOrderedQuantity() * orderItemData.getSellingPricePerUnit();
+        }
+
+        Long clientId = orderApi.getOrderById(orderId).getClientId();
+
+        String clientName = userApi.getUserById(clientId).getName();
+
+        InvoiceData invoiceData = new InvoiceData(time, orderId, clientName, orderItemDataList, total);
+
+        String xml = InvoiceUtil.jaxbObjectToXML(invoiceData);
+        File xsltFile = new File("src", "invoice.xml");
+        File pdfFile = new File("src", "invoice.pdf");
+        System.out.println(xml);
+        InvoiceUtil.convertToPDF(invoiceData, xsltFile, pdfFile, xml);
+        return null;
+    }
+
+    public Map<Long, Long> getMapOfInventoryQuantities(List<OrderItemPojo> orderItems) {
+        Map<Long, Long> inventoryQuantityMap = new HashMap<>();
+        for (OrderItemPojo orderItem: orderItems) {
+            InventoryPojo inventoryPojo = inventoryApi.getByGlobalSkuId(orderItem.getGlobalSkuId());
+            inventoryQuantityMap.put(orderItem.getGlobalSkuId(), inventoryPojo.getAvailableQuantity());
+        }
+        return inventoryQuantityMap;
     }
 }

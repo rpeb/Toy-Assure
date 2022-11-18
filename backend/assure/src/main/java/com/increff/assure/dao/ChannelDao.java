@@ -30,7 +30,7 @@ public class ChannelDao extends AbstractDao {
 
     @Transactional(readOnly = true)
     public ChannelPojo select(String channelName) {
-        TypedQuery<ChannelPojo> query = em().createQuery(SELECT_BY_ID, ChannelPojo.class);
+        TypedQuery<ChannelPojo> query = em().createQuery(SELECT_BY_NAME, ChannelPojo.class);
         query.setParameter("name", channelName);
         return getSingle(query);
     }

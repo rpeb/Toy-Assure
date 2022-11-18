@@ -15,6 +15,9 @@ public class BinSkuDao extends AbstractDao {
     public static final String SELECT_BY_BINID_GLOBALSKUID = "select b from BinSkuPojo b " +
             "where binId=:binId and globalSkuId=:globalSkuId";
 
+    public static final String SELECT_BY_GLOBALSKUID = "select b from BinSkuPojo b " +
+            "where globalSkuId=:globalSkuId";
+
     public static final String SELECT_BY_ID = "select b from BinSkuPojo b where id=:id";
 
     @Transactional
@@ -40,6 +43,13 @@ public class BinSkuDao extends AbstractDao {
     }
 
     @Transactional(readOnly = true)
+    public List<BinSkuPojo> selectByGlobalSkuId(Long globalSkuId) {
+        TypedQuery<BinSkuPojo> query = em().createQuery(SELECT_BY_GLOBALSKUID, BinSkuPojo.class);
+        query.setParameter("globalSkuId", globalSkuId);
+        return query.getResultList();
+    }
+
+    @Transactional(readOnly = true)
     public BinSkuPojo select(Long id) {
         TypedQuery<BinSkuPojo> query = em().createQuery(
                 SELECT_BY_ID,
@@ -50,8 +60,8 @@ public class BinSkuDao extends AbstractDao {
     }
 
     @Transactional(rollbackFor = ApiException.class)
-    public void update(Long id, BinSkuPojo binSkuPojo) {
+    public void update(Long id, Long quantity) {
         BinSkuPojo exists = select(id);
-        exists.setQuantity(binSkuPojo.getQuantity());
+        exists.setQuantity(quantity);
     }
 }

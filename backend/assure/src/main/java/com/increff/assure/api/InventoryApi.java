@@ -12,6 +12,7 @@ import java.util.List;
 import static java.util.Objects.isNull;
 
 @Service
+@Transactional(rollbackFor = ApiException.class)
 public class InventoryApi {
 
     @Autowired
@@ -38,31 +39,25 @@ public class InventoryApi {
         }
     }
 
-    //
     @Transactional(readOnly = true)
-    public InventoryPojo getByGlobalSkuId(Long globalSkuId) throws ApiException {
-        productApi.throwsIfGlobalSkuIdNotFound(globalSkuId);
+    public InventoryPojo getByGlobalSkuId(Long globalSkuId) {
         return inventoryDao.selectByGlobalSkuId(globalSkuId);
     }
 
-    @Transactional(rollbackFor = ApiException.class)
     public void updateAvailableQuantity(Long globalSkuId, Long quantity) throws ApiException {
         InventoryPojo inventoryPojo = getByGlobalSkuId(globalSkuId);
-        inventoryPojo.setAvailableQuantity(inventoryPojo.getAvailableQuantity() + quantity);
+        inventoryPojo.setAvailableQuantity(quantity);
     }
 
 
-    @Transactional(rollbackFor = ApiException.class)
     public void upload(List<InventoryPojo> inventoryPojoList) {
         for (InventoryPojo inventoryPojo : inventoryPojoList) {
-            InventoryPojo exists = inventoryDao.selectByGlobalSkuId(inventoryPojo.getGlobalSkuId());
-            if (isNull(exists)) {
-                inventoryPojo.setFulfilledQuantity(0L);
-                inventoryPojo.setAllocatedQuantity(0L);
-                inventoryDao.insert(inventoryPojo);
-            } else {
-                exists.setAvailableQuantity(exists.getAvailableQuantity() + inventoryPojo.getAvailableQuantity());
-            }
+            inventoryDao.insert(inventoryPojo);
         }
+    }
+
+    public void updateAllocatedQuantity(Long globalSkuId, Long quantity) {
+        InventoryPojo inventoryPojo = getByGlobalSkuId(globalSkuId);
+        inventoryPojo.setAllocatedQuantity(quantity);
     }
 }
