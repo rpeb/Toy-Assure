@@ -10,6 +10,8 @@ import com.increff.assure.pojo.BinPojo;
 import com.increff.assure.pojo.BinSkuPojo;
 import com.increff.assure.pojo.ProductPojo;
 import com.increff.commons.exception.ApiException;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,8 @@ import static java.lang.Math.min;
 @Service
 @Transactional(rollbackFor = ApiException.class)
 public class BinSkuDto {
+
+    public static final Logger LOGGER = LogManager.getLogger(BinSkuDto.class);
 
     @Autowired
     private BinSkuApi binSkuApi;
@@ -80,6 +84,7 @@ public class BinSkuDto {
         Collections.reverse(binSkuPojos);
 
         for (BinSkuPojo binSkuPojo : binSkuPojos) {
+            LOGGER.info("binskuid = " + binSkuPojo.getId());
             Long allocatedQtyInBin = min(quantity, binSkuPojo.getQuantity());
             binSkuPojo.setQuantity(binSkuPojo.getQuantity() - allocatedQtyInBin);
             quantity -= allocatedQtyInBin;

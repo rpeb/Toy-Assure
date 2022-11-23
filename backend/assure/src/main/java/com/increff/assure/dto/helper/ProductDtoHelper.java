@@ -1,13 +1,17 @@
 package com.increff.assure.dto.helper;
 
 import com.increff.assure.model.data.ProductData;
+import com.increff.assure.model.form.FetchProductForm;
 import com.increff.assure.model.form.ProductDetailsUpdateForm;
 import com.increff.assure.model.form.ProductForm;
 import com.increff.assure.pojo.ProductPojo;
 import com.increff.commons.exception.ApiException;
+import com.mysql.cj.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.Objects.isNull;
 
 public class ProductDtoHelper {
 
@@ -32,6 +36,9 @@ public class ProductDtoHelper {
     }
 
     public static ProductData convertProductPojoToProductData(ProductPojo p) {
+        if (isNull(p)) {
+            return null;
+        }
         ProductData d = new ProductData();
         d.setName(p.getName());
         d.setDescription(p.getDescription());
@@ -60,26 +67,24 @@ public class ProductDtoHelper {
         if (productForm.getName() == null || productForm.getName().isEmpty()) {
             throw new ApiException("name of product cannot be empty");
         }
-        if (productForm.getBrandId() == null || productForm.getBrandId().isEmpty()) {
-            throw new ApiException("brand id of a product cannot be empty");
-        }
         if (productForm.getMrp() == null) {
             throw new ApiException("mrp of product is required");
         }
         if (productForm.getMrp() < 0) {
             throw new ApiException("mrp of product cannot be negative");
         }
-        if (productForm.getDescription() == null || productForm.getDescription().isEmpty()) {
-            throw new ApiException("description of a product cannot be empty");
-        }
     }
 
     public static void normalize(ProductForm productForm) throws ApiException {
         validate(productForm);
-        productForm.setBrandId(productForm.getBrandId().trim().toLowerCase());
+        if (productForm.getBrandId() != null && !productForm.getBrandId().isEmpty()) {
+            productForm.setBrandId(productForm.getBrandId().trim().toLowerCase());
+        }
         productForm.setClientSkuId(productForm.getClientSkuId().trim().toLowerCase());
         productForm.setName(productForm.getName().trim().toLowerCase());
-        productForm.setDescription(productForm.getDescription().trim().toLowerCase());
+        if (productForm.getDescription() != null && !productForm.getDescription().isEmpty()) {
+            productForm.setDescription(productForm.getDescription().trim().toLowerCase());
+        }
     }
 
     public static void normalizeList(List<ProductForm> productFormList) throws ApiException {
@@ -109,5 +114,17 @@ public class ProductDtoHelper {
         updateForm.setName(updateForm.getName().trim().toLowerCase());
         updateForm.setBrandId(updateForm.getBrandId().trim().toLowerCase());
         updateForm.setDescription(updateForm.getDescription().trim().toLowerCase());
+    }
+
+    public static void validateFetchProductForm(FetchProductForm fetchProductForm) throws ApiException {
+        if (isNull(fetchProductForm)) {
+            throw new ApiException("form is empty");
+        }
+        if (isNull(fetchProductForm.getClientId())) {
+            throw new ApiException("client id is missing");
+        }
+        if (StringUtils.isNullOrEmpty(fetchProductForm.getClientSkuId())) {
+            throw new ApiException("client sku id is missing");
+        }
     }
 }

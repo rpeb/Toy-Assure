@@ -56,7 +56,7 @@ public class InventoryApi {
 
     public void updateAllocatedQuantity(Long globalSkuId, Long quantity) {
         InventoryPojo inventoryPojo = getByGlobalSkuId(globalSkuId);
-        inventoryPojo.setAllocatedQuantity(quantity);
+        inventoryPojo.setAllocatedQuantity(inventoryPojo.getAllocatedQuantity() + quantity);
     }
 
     public void fulfillQuantity(Long globalSkuId, Long fulfilledQuantity) {

@@ -2,6 +2,7 @@ package com.increff.assure.controller;
 
 import com.increff.assure.dto.ProductDto;
 import com.increff.assure.model.data.ProductData;
+import com.increff.assure.model.form.FetchProductForm;
 import com.increff.assure.model.form.ProductDetailsUpdateForm;
 import com.increff.assure.model.form.ProductForm;
 import com.increff.commons.exception.ApiException;
@@ -48,10 +49,10 @@ public class ProductController {
         return dto.getAll();
     }
 
-    @RequestMapping(value = "/{globalSkuId}", method = RequestMethod.GET)
-    @ApiOperation(value = "get a product by globalSkuId")
-    public ProductData getById(@PathVariable Long globalSkuId) throws ApiException {
-        return dto.getById(globalSkuId);
+    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @ApiOperation(value = "get a product by clientid and clientSkuId")
+    public ProductData getByClientIdAndClientSkuId(@RequestBody FetchProductForm fetchProductForm) throws ApiException {
+        return dto.getByClientIdAndClientSkuId(fetchProductForm);
     }
 
 }

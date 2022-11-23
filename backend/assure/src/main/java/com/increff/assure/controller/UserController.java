@@ -42,14 +42,10 @@ public class UserController {
         return dto.getUserById(id);
     }
 
-    // todo: validations and normalizations
-
     @RequestMapping(method = RequestMethod.PATCH)
     @ApiOperation(value = "change the name of user")
-    public void updateUserName(@RequestBody UserForm userForm, @RequestParam String name) {
-        LOGGER.info("userform = " + userForm);
-        LOGGER.info("name = " + name);
-        dto.updateUserName(UserDtoHelper.convertUserFormtoUserPojo(userForm), name);
+    public void updateUserName(@RequestBody UserForm userForm, @RequestParam String name) throws ApiException {
+        dto.updateUserName(userForm, name);
     }
 
 }

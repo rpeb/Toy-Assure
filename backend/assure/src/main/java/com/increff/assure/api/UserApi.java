@@ -1,6 +1,7 @@
 package com.increff.assure.api;
 
 import com.increff.assure.dao.UserDao;
+import com.increff.assure.model.form.UserForm;
 import com.increff.assure.pojo.UserPojo;
 import com.increff.assure.pojo.UserType;
 import com.increff.commons.exception.ApiException;
@@ -34,6 +35,11 @@ public class UserApi {
     @Transactional(readOnly = true)
     public UserPojo getUserById(Long id) {
         return userDao.select(id);
+    }
+
+    @Transactional(readOnly = true)
+    public UserPojo getUserByNameAndType(String name, UserType type) {
+        return userDao.select(name, type);
     }
 
     @Transactional(readOnly = true)

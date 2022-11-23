@@ -1,8 +1,10 @@
 package com.increff.assure.dto;
 
 import com.increff.assure.api.ProductApi;
+import com.increff.assure.api.UserApi;
 import com.increff.assure.dto.helper.ProductDtoHelper;
 import com.increff.assure.model.data.ProductData;
+import com.increff.assure.model.form.FetchProductForm;
 import com.increff.assure.model.form.ProductDetailsUpdateForm;
 import com.increff.assure.model.form.ProductForm;
 import com.increff.assure.pojo.ProductPojo;
@@ -13,11 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @Service
 public class ProductDto {
 
     @Autowired
     private ProductApi productApi;
+
+    @Autowired
+    private UserApi userApi;
 
     @Transactional
     public void bulkUpload(List<ProductForm> productFormList, Long clientId) throws ApiException {
@@ -37,9 +44,15 @@ public class ProductDto {
         return ProductDtoHelper.convertListOfProductPojoToListOfProductData(productApi.getAll());
     }
 
-    @Transactional(readOnly = true)
-    public ProductData getById(Long globalSkuId) throws ApiException {
-        return ProductDtoHelper.convertProductPojoToProductData(productApi.getById(globalSkuId));
-    }
 
+    @Transactional(readOnly = true)
+    public ProductData getByClientIdAndClientSkuId(FetchProductForm fetchProductForm) throws ApiException {
+        ProductDtoHelper.validateFetchProductForm(fetchProductForm);
+        userApi.throwsIfInvalidClientId(fetchProductForm.getClientId());
+        ProductPojo productPojo = productApi.getByClientIdAndClientSkuId(
+                fetchProductForm.getClientId(),
+                fetchProductForm.getClientSkuId()
+        );
+        return ProductDtoHelper.convertProductPojoToProductData(productPojo);
+    }
 }

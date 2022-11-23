@@ -87,7 +87,7 @@ public class OrderDto {
             Long quantitiesRequired = orderedQuantity - allocatedQuantity;
             Long allocatableQuantity = Math.min(quantityInInventory, quantitiesRequired);
             orderItem.setAllocatedQuantity(allocatableQuantity + allocatedQuantity);
-            inventoryApi.updateAllocatedQuantity(orderItem.getGlobalSkuId(), allocatedQuantity + allocatableQuantity);
+            inventoryApi.updateAllocatedQuantity(orderItem.getGlobalSkuId(), allocatableQuantity);
             inventoryApi.updateAvailableQuantity(orderItem.getGlobalSkuId(), quantityInInventory - allocatableQuantity);
             binSkuDto.updateAvailableQuantity(orderItem.getGlobalSkuId(), allocatableQuantity);
             if (orderItem.getOrderedQuantity().equals(orderItem.getAllocatedQuantity())) {

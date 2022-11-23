@@ -9,6 +9,8 @@ import com.increff.commons.exception.ApiException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 public class UserDtoHelper {
 
     public static void validate(UserForm userForm) throws ApiException {
@@ -29,6 +31,9 @@ public class UserDtoHelper {
     }
 
     public static UserData convertUserPojoToUserData(UserPojo p) {
+        if (isNull(p)) {
+            return null;
+        }
         UserData d = new UserData();
         d.setId(p.getId());
         d.setName(p.getName());

@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
-public class UserDto {
+import static java.util.Objects.isNull;
 
+@Service
+@Transactional(rollbackFor = ApiException.class)
+public class UserDto {
 
     @Autowired
     private UserApi userApi;
@@ -24,10 +26,13 @@ public class UserDto {
         return UserDtoHelper.convertListOfUserPojoToListOfUserData(userApi.getAllUsers());
     }
 
-    @Transactional
     public void addUser(UserForm userForm) throws ApiException {
         UserDtoHelper.normalize(userForm);
         UserPojo userPojo = UserDtoHelper.convertUserFormtoUserPojo(userForm);
+        UserPojo exists = userApi.getUserByNameAndType(userForm.getName(), userForm.getType());
+        if (!isNull(exists)) {
+            return;
+        }
         userApi.addUser(userPojo);
     }
 
@@ -36,9 +41,12 @@ public class UserDto {
         return UserDtoHelper.convertUserPojoToUserData(userApi.getUserById(id));
     }
 
-    @Transactional
-    public void updateUserName(UserPojo userPojo, String name) {
-        name = name.trim().toLowerCase();
+    public void updateUserName(UserForm userForm, String name) throws ApiException {
+        UserDtoHelper.normalize(userForm);
+        UserPojo userPojo = userApi.getUserByNameAndType(userForm.getName(), userForm.getType());
+        if (isNull(userPojo)) {
+            throw new ApiException("incorrect user name or type");
+        }
         userApi.updateUserName(userPojo, name);
     }
 }
