@@ -1,4 +1,4 @@
-package com.increff.assure.model.data;
+package com.increff.commons.model.data;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

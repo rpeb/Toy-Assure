@@ -13,6 +13,8 @@ public class ChannelListingDao extends AbstractDao {
 
     public static final String SELECT_BY_CHANNELID_CHANNELSKU_CLIENTID = "select c from ChannelListingPojo c " +
             "where channelId=:channelId and channelSkuId=:channelSkuId and clientId=:clientId";
+    private static final String SELECT_BY_CHANNELID_GLOBALSKUID = "select c from ChannelListingPojo c " +
+            "where channelId=:channelId and globalSkuId=:globalSkuId";
 
     public void insert(ChannelListingPojo channelListingPojo) {
         em().persist(channelListingPojo);
@@ -27,6 +29,17 @@ public class ChannelListingDao extends AbstractDao {
         query.setParameter("clientId", clientId);
         query.setParameter("channelId", channelId);
         query.setParameter("channelSkuId", channelSkuId);
+        return getSingle(query);
+    }
+
+    @Transactional(readOnly = true)
+    public ChannelListingPojo selectByChannelIdAndGlobalSkuId(Long channelId, Long globalSkuId) {
+        TypedQuery<ChannelListingPojo> query = em().createQuery(
+                SELECT_BY_CHANNELID_GLOBALSKUID,
+                ChannelListingPojo.class
+        );
+        query.setParameter("channelId", channelId);
+        query.setParameter("globalSkuId", globalSkuId);
         return getSingle(query);
     }
 }

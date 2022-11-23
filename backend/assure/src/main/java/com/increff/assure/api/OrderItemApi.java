@@ -1,12 +1,11 @@
 package com.increff.assure.api;
 
 import com.increff.assure.dao.OrderItemDao;
-import com.increff.assure.model.data.OrderItemData;
 import com.increff.assure.pojo.OrderItemPojo;
 import com.increff.assure.pojo.ProductPojo;
 import com.increff.commons.exception.ApiException;
+import com.increff.commons.model.data.OrderItemData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

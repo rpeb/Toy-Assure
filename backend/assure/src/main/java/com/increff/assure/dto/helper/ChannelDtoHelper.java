@@ -1,8 +1,12 @@
 package com.increff.assure.dto.helper;
 
 import com.increff.assure.model.form.ChannelForm;
+import com.increff.assure.model.form.ChannelNameUpdateForm;
 import com.increff.assure.pojo.ChannelPojo;
 import com.increff.commons.exception.ApiException;
+import com.mysql.cj.util.StringUtils;
+
+import static java.util.Objects.isNull;
 
 public class ChannelDtoHelper {
 
@@ -22,5 +26,19 @@ public class ChannelDtoHelper {
         channelPojo.setName(channelForm.getName());
         channelPojo.setInvoiceType(channelForm.getInvoiceType());
         return channelPojo;
+    }
+
+    public static void normalizeChannelNameUpdateForm(ChannelNameUpdateForm channelNameUpdateForm) throws ApiException {
+        if (isNull(channelNameUpdateForm)) {
+            throw new ApiException("update details not found");
+        }
+        if (StringUtils.isNullOrEmpty(channelNameUpdateForm.getOldName())) {
+            throw new ApiException("old name field is missing");
+        }
+        if (StringUtils.isNullOrEmpty(channelNameUpdateForm.getNewName())) {
+            throw new ApiException("new name field is empty");
+        }
+        channelNameUpdateForm.setOldName(channelNameUpdateForm.getOldName().trim().toLowerCase());
+        channelNameUpdateForm.setNewName(channelNameUpdateForm.getNewName().trim().toLowerCase());
     }
 }

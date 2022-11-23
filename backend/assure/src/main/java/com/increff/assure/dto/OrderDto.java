@@ -1,25 +1,25 @@
 package com.increff.assure.dto;
 
-import com.increff.assure.api.*;
+import com.increff.assure.api.InventoryApi;
+import com.increff.assure.api.OrderApi;
+import com.increff.assure.api.OrderItemApi;
+import com.increff.assure.api.UserApi;
 import com.increff.assure.dto.helper.OrderDtoHelper;
-import com.increff.assure.model.data.OrderItemData;
 import com.increff.assure.model.form.InternalOrderForm;
 import com.increff.assure.model.form.InternalOrderItemForm;
-import com.increff.assure.pojo.BinPojo;
+import com.increff.assure.pojo.InventoryPojo;
 import com.increff.assure.pojo.OrderItemPojo;
 import com.increff.assure.pojo.OrderPojo;
 import com.increff.assure.pojo.OrderStatus;
+import com.increff.assure.util.InvoiceUploadException;
 import com.increff.commons.exception.ApiException;
 import com.increff.commons.model.form.ChannelOrderForm;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = ApiException.class)
 public class OrderDto {
-
-    public static final Logger LOGGER = LogManager.getLogger(OrderDto.class);
 
     @Autowired
     private OrderApi orderApi;
@@ -73,45 +71,48 @@ public class OrderDto {
         OrderDtoHelper.throwsIfDuplicateChannelSkus(orderForm.getChannelOrderItems());
         userApi.throwsIfInvalidClientId(orderForm.getClientId());
         userApi.throwsIfInvalidCustomerId(orderForm.getCustomerId());
-        LOGGER.info("orderForm = " + orderForm);
         OrderPojo insertedOrderPojo = orderApi.createOrder(OrderDtoHelper.convertChannelOrderFormToOrderPojo(orderForm));
-        LOGGER.info("insertedOrderPojo = " + insertedOrderPojo);
         orderItemDto.createChannelOrderItems(orderForm.getChannelOrderItems(), insertedOrderPojo);
     }
 
     public void allocateOrder(Long orderId) throws ApiException {
         orderDtoHelper.throwsIfOrderStatusNotCreated(orderId);
         List<OrderItemPojo> orderItems = orderItemApi.getOrderItemsByOrderId(orderId);
-        int numberOfOrderedItems = orderItems.size();
-        int numberOfItemsFullyAllocated = 0;
+        int countOfFullyAllocatedItems = 0;
         Map<Long, Long> inventoryQuantityMap = orderDtoHelper.getMapOfInventoryQuantities(orderItems);
-        for (OrderItemPojo orderItem: orderItems) {
+        for (OrderItemPojo orderItem : orderItems) {
             Long quantityInInventory = inventoryQuantityMap.get(orderItem.getGlobalSkuId());
             Long allocatedQuantity = orderItem.getAllocatedQuantity();
             Long orderedQuantity = orderItem.getOrderedQuantity();
             Long quantitiesRequired = orderedQuantity - allocatedQuantity;
-            if (quantitiesRequired <= quantityInInventory) {
-                // we have sufficient items in the inventory
-                orderItem.setAllocatedQuantity(orderedQuantity);
-                inventoryApi.updateAllocatedQuantity(orderItem.getGlobalSkuId(), orderedQuantity);
-                inventoryApi.updateAvailableQuantity(orderItem.getGlobalSkuId(), quantityInInventory - orderedQuantity);
-                binSkuDto.updateAvailableQuantity(orderItem.getGlobalSkuId(), quantityInInventory - orderedQuantity);
-            } else {
-                orderItem.setAllocatedQuantity(orderItem.getAllocatedQuantity() + quantityInInventory);
-                inventoryApi.updateAvailableQuantity(orderItem.getGlobalSkuId(), 0L);
-                inventoryApi.updateAllocatedQuantity(orderItem.getGlobalSkuId(), orderItem.getAllocatedQuantity());
-            }
+            Long allocatableQuantity = Math.min(quantityInInventory, quantitiesRequired);
+            orderItem.setAllocatedQuantity(allocatableQuantity + allocatedQuantity);
+            inventoryApi.updateAllocatedQuantity(orderItem.getGlobalSkuId(), allocatedQuantity + allocatableQuantity);
+            inventoryApi.updateAvailableQuantity(orderItem.getGlobalSkuId(), quantityInInventory - allocatableQuantity);
+            binSkuDto.updateAvailableQuantity(orderItem.getGlobalSkuId(), allocatableQuantity);
             if (orderItem.getOrderedQuantity().equals(orderItem.getAllocatedQuantity())) {
-                numberOfItemsFullyAllocated++;
+                countOfFullyAllocatedItems++;
             }
         }
-        if (numberOfItemsFullyAllocated == numberOfOrderedItems) {
+        if (countOfFullyAllocatedItems == orderItems.size()) {
             orderApi.updateOrderStatus(orderId, OrderStatus.ALLOCATED);
         }
     }
 
-    public String getInvoice(Long orderId) throws ApiException, IOException, TransformerException {
+    public String getInvoice(Long orderId) throws ApiException, IOException, TransformerException, InvoiceUploadException {
         return orderDtoHelper.getInvoice(orderId);
     }
 
+    public void fulfillOrder(Long orderId) throws ApiException {
+        orderDtoHelper.throwsIfOrderStatusNotAllocated(orderId);
+        List<OrderItemPojo> orderItems = orderItemApi.getOrderItemsByOrderId(orderId);
+        for (OrderItemPojo orderItemPojo : orderItems) {
+            InventoryPojo inventoryPojo = inventoryApi.getByGlobalSkuId(orderItemPojo.getGlobalSkuId());
+            orderItemPojo.setFulfilledQuantity(orderItemPojo.getOrderedQuantity());
+            orderItemPojo.setAllocatedQuantity(0L);
+            inventoryPojo.setAllocatedQuantity(inventoryPojo.getAllocatedQuantity() - orderItemPojo.getOrderedQuantity());
+            inventoryPojo.setFulfilledQuantity(inventoryPojo.getFulfilledQuantity() + orderItemPojo.getOrderedQuantity());
+        }
+        orderApi.updateOrderStatus(orderId, OrderStatus.FULFILLED);
+    }
 }

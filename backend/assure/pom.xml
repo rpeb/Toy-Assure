@@ -22,20 +22,9 @@
         <jetty.version>9.4.21.v20190926</jetty.version>
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
-        <fop.version>2.7</fop.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.vladmihalcea</groupId>
-            <artifactId>hibernate-types-52</artifactId>
-            <version>2.16.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>fop</artifactId>
-            <version>${fop.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.increff</groupId>
             <artifactId>commons</artifactId>

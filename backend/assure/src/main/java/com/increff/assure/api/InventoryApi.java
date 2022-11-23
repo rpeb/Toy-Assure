@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static java.util.Objects.isNull;
-
 @Service
 @Transactional(rollbackFor = ApiException.class)
 public class InventoryApi {
@@ -59,5 +57,16 @@ public class InventoryApi {
     public void updateAllocatedQuantity(Long globalSkuId, Long quantity) {
         InventoryPojo inventoryPojo = getByGlobalSkuId(globalSkuId);
         inventoryPojo.setAllocatedQuantity(quantity);
+    }
+
+    public void fulfillQuantity(Long globalSkuId, Long fulfilledQuantity) {
+        InventoryPojo inventoryPojo = getByGlobalSkuId(globalSkuId);
+        inventoryPojo.setAllocatedQuantity(inventoryPojo.getAllocatedQuantity() - fulfilledQuantity);
+        inventoryPojo.setFulfilledQuantity(inventoryPojo.getFulfilledQuantity() + fulfilledQuantity);
+    }
+
+    public void updateAvailableQuantityWhenBinSkuOverwrites(Long globalSkuId, Long change) {
+        InventoryPojo inventoryPojo = getByGlobalSkuId(globalSkuId);
+        inventoryPojo.setAvailableQuantity(inventoryPojo.getAvailableQuantity() + change);
     }
 }

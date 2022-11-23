@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.isNull;
 
@@ -20,9 +21,9 @@ public class InventoryDto {
     @Autowired
     private InventoryApi inventoryApi;
 
-    public void updateInventory(List<BinSkuPojo> uploadedBinSkus) {
+    public void updateInventory(List<BinSkuPojo> uploadedBinSkus, Map<Long, Long> mapOfBinskuIdToChangeInQuantity) {
         List<InventoryPojo> inventoryPojos = new ArrayList<>();
-        for (BinSkuPojo binSkuPojo: uploadedBinSkus) {
+        for (BinSkuPojo binSkuPojo : uploadedBinSkus) {
             InventoryPojo exists = inventoryApi.getByGlobalSkuId(binSkuPojo.getGlobalSkuId());
             if (isNull(exists)) {
                 InventoryPojo inventoryPojo = new InventoryPojo();
@@ -32,9 +33,16 @@ public class InventoryDto {
                 inventoryPojo.setFulfilledQuantity(0L);
                 inventoryPojos.add(inventoryPojo);
             } else {
-                exists.setAvailableQuantity(exists.getAvailableQuantity() + binSkuPojo.getQuantity());
+                exists.setAvailableQuantity(
+                        mapOfBinskuIdToChangeInQuantity.get(binSkuPojo.getId()) +
+                                exists.getAvailableQuantity()
+                );
             }
         }
         inventoryApi.upload(inventoryPojos);
+    }
+
+    public void updateAvailableQuantity(Long globalSkuId, Long change) throws ApiException {
+        inventoryApi.updateAvailableQuantityWhenBinSkuOverwrites(globalSkuId, change);
     }
 }

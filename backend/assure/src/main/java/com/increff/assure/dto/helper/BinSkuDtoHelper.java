@@ -8,6 +8,7 @@ import com.increff.assure.model.data.BinSkuData;
 import com.increff.assure.model.data.ErrorData;
 import com.increff.assure.model.form.BinSkuForm;
 import com.increff.assure.model.form.BinSkuUpdateForm;
+import com.increff.assure.pojo.BinPojo;
 import com.increff.assure.pojo.BinSkuPojo;
 import com.increff.assure.pojo.InventoryPojo;
 import com.increff.assure.pojo.ProductPojo;
@@ -120,9 +121,7 @@ public class BinSkuDtoHelper {
     private static BinSkuData convertBinSkuPojoToBinSkuData(BinSkuPojo binSkuPojo) {
         BinSkuData binSkuData = new BinSkuData();
         binSkuData.setBinId(binSkuPojo.getBinId());
-        binSkuData.setGlobalSkuId(binSkuPojo.getGlobalSkuId());
         binSkuData.setQuantity(binSkuPojo.getQuantity());
-        binSkuData.setId(binSkuPojo.getId());
         return binSkuData;
     }
 
@@ -136,6 +135,17 @@ public class BinSkuDtoHelper {
         if (binSkuUpdateForm.getQuantity() < 0) {
             throw new ApiException("quantity cannot be negative");
         }
+    }
+
+    public ProductPojo getProductAndCheck(BinSkuUpdateForm binSkuUpdateForm) throws ApiException {
+        ProductPojo productPojo = productApi.getByClientIdAndClientSkuId(
+                binSkuUpdateForm.getClientId(),
+                binSkuUpdateForm.getClientSkuId()
+        );
+        if (isNull(productPojo)) {
+            throw new ApiException("invalid clientSkuId: " + binSkuUpdateForm.getClientSkuId());
+        }
+        return productPojo;
     }
 
     public BinSkuPojo convertBinSkuUpdateFormToBinSkuPojo(BinSkuUpdateForm binSkuUpdateForm) {
@@ -195,4 +205,27 @@ public class BinSkuDtoHelper {
         ValidationUtil.throwsIfNotEmpty(errorDataList);
     }
 
+    public BinPojo getBinAndCheck(BinSkuUpdateForm binSkuUpdateForm) throws ApiException {
+        BinPojo binPojo = binApi.getBinById(binSkuUpdateForm.getBinId());
+        if (isNull(binPojo)) {
+            throw new ApiException("invalid binid: " + binSkuUpdateForm.getBinId());
+        }
+        return binPojo;
+    }
+
+    public Map<Long, Long> getMapOfBinskuIdToChangeInQuantity(Long clientId, List<BinSkuForm> binSkuFormList) {
+        Map<Long, Long> mapOfBinskuIdToChangeInQuantity = new HashMap<>();
+        for (BinSkuForm binSkuForm: binSkuFormList) {
+            Long globalSkuId = productApi.getByClientIdAndClientSkuId(
+                    clientId,
+                    binSkuForm.getClientSkuId()
+            ).getGlobalSkuId();
+            Long binSkuId = binSkuApi.getByBinIdAndGlobalSkuId(
+                    binSkuForm.getBinId(),
+                    globalSkuId
+            ).getId();
+            mapOfBinskuIdToChangeInQuantity.put(binSkuId, binSkuForm.getQuantity());
+        }
+        return mapOfBinskuIdToChangeInQuantity;
+    }
 }

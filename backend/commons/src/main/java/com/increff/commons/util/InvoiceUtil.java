@@ -1,6 +1,6 @@
-package com.increff.assure.util;
+package com.increff.commons.util;
 
-import com.increff.assure.model.data.InvoiceData;
+import com.increff.commons.model.data.InvoiceData;
 import org.apache.fop.apps.*;
 
 import javax.xml.bind.JAXBContext;
@@ -13,6 +13,7 @@ import java.io.*;
 import java.nio.file.Files;
 
 public class InvoiceUtil {
+
     public static final FopFactory FOP_FACTORY = FopFactory.newInstance(new File(".").toURI());
 
     public static String jaxbObjectToXML(InvoiceData invoiceData) {
@@ -29,7 +30,7 @@ public class InvoiceUtil {
         return "";
     }
 
-    public static void convertToPDF(InvoiceData invoiceData, File xslt, File pdf, String xml) throws IOException, TransformerException {
+    public static void convertToPDF(File xslt, File pdf, String xml) throws IOException, TransformerException {
         FOUserAgent foUserAgent = FOP_FACTORY.newFOUserAgent();
         OutputStream out = Files.newOutputStream(pdf.toPath());
         out = new java.io.BufferedOutputStream(out);
@@ -50,6 +51,6 @@ public class InvoiceUtil {
         } finally {
             out.close();
         }
-
     }
+
 }

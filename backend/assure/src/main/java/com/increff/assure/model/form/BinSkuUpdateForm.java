@@ -4,5 +4,8 @@ import lombok.Data;
 
 @Data
 public class BinSkuUpdateForm {
+    private Long binId;
+    private Long clientId;
+    private String clientSkuId;
     private Long quantity;
 }

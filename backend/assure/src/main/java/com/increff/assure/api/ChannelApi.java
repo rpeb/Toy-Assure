@@ -1,6 +1,7 @@
 package com.increff.assure.api;
 
 import com.increff.assure.dao.ChannelDao;
+import com.increff.assure.model.form.ChannelNameUpdateForm;
 import com.increff.assure.pojo.ChannelPojo;
 import com.increff.commons.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static java.util.Objects.isNull;
 
 @Service
+@Transactional(rollbackFor = ApiException.class)
 public class ChannelApi {
 
     public static final String INTERNAL_CHANNEL_NAME = "internal";
@@ -17,8 +19,11 @@ public class ChannelApi {
     @Autowired
     private ChannelDao channelDao;
 
-    @Transactional
     public void add(ChannelPojo channelPojo) {
+        ChannelPojo exists = channelDao.select(channelPojo.getName());
+        if (!isNull(exists)) {
+            return;
+        }
         channelDao.insert(channelPojo);
     }
 
@@ -58,5 +63,13 @@ public class ChannelApi {
                 throw new ApiException("channel id is invalid for channel order");
             }
         }
+    }
+
+    public void update(ChannelNameUpdateForm channelNameUpdateForm) throws ApiException {
+        ChannelPojo channelPojo = channelDao.select(channelNameUpdateForm.getOldName());
+        if (isNull(channelPojo)) {
+            throw new ApiException("no channel found with name: " + channelNameUpdateForm.getOldName());
+        }
+        channelPojo.setName(channelNameUpdateForm.getNewName());
     }
 }

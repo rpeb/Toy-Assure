@@ -2,7 +2,6 @@ package com.increff.assure.api;
 
 import com.increff.assure.dao.OrderDao;
 import com.increff.assure.model.data.OrderData;
-import com.increff.assure.pojo.OrderItemPojo;
 import com.increff.assure.pojo.OrderPojo;
 import com.increff.assure.pojo.OrderStatus;
 import com.increff.commons.exception.ApiException;
@@ -54,10 +53,7 @@ public class OrderApi {
         Long clientId = orderPojo.getClientId();
         Long channelId = orderPojo.getChannelId();
         String channelOrderId = orderPojo.getChannelOrderId();
-        boolean found = false;
-        if (getOrderByClientIdChannelIdChannelOrderId(clientId, channelId, channelOrderId) != null) {
-            found = true;
-        }
+        boolean found = getOrderByClientIdChannelIdChannelOrderId(clientId, channelId, channelOrderId) != null;
         if (orderDao.select(channelOrderId) != null) {
             found = true;
         }

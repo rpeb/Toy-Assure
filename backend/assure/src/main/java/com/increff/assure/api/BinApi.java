@@ -15,8 +15,9 @@ public class BinApi {
     private BinDao binDao;
 
     @Transactional
-    public void addBin(BinPojo p) {
+    public BinPojo addBin(BinPojo p) {
         binDao.insert(p);
+        return p;
     }
 
     @Transactional(readOnly = true)

@@ -32,9 +32,9 @@ public class BinSkuController {
         return dto.getAll();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT)
     @ApiOperation(value = "update the quantity")
-    public void updateQuantity(@PathVariable Long id, @RequestBody BinSkuUpdateForm binSkuUpdateForm) throws ApiException {
-        dto.updateQuantity(id, binSkuUpdateForm);
+    public void updateQuantity(@RequestBody BinSkuUpdateForm binSkuUpdateForm) throws ApiException {
+        dto.updateQuantity(binSkuUpdateForm);
     }
 }

@@ -38,6 +38,7 @@ public class UserDto {
 
     @Transactional
     public void updateUserName(UserPojo userPojo, String name) {
+        name = name.trim().toLowerCase();
         userApi.updateUserName(userPojo, name);
     }
 }

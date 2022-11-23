@@ -42,6 +42,11 @@ public class ChannelListingApi {
     public ChannelListingPojo getByClientIdChannelIdChannelSkuId(
             Long clientId, Long channelId, String channelSkuId
     ) {
-        return channelListingDao.selectByClientIdChannelIdChannelSkuId(clientId,channelId,channelSkuId);
+        return channelListingDao.selectByClientIdChannelIdChannelSkuId(clientId, channelId, channelSkuId);
+    }
+
+    @Transactional(readOnly = true)
+    public ChannelListingPojo getByChannelIdAndGlobalSkuId(Long channelId, Long globalSkuId) {
+        return channelListingDao.selectByChannelIdAndGlobalSkuId(channelId, globalSkuId);
     }
 }

@@ -1,6 +1,7 @@
 package com.increff.assure.controller;
 
 import com.increff.assure.dto.BinDto;
+import com.increff.assure.model.data.BinData;
 import com.increff.assure.pojo.BinPojo;
 import com.increff.commons.exception.ApiException;
 import io.swagger.annotations.Api;
@@ -21,15 +22,16 @@ public class BinController {
     @Autowired
     private BinDto dto;
 
+    // todo: return ids of newly created bins
     @RequestMapping(method = RequestMethod.POST)
     @ApiOperation(value = "create n bins")
-    public void addBin(@RequestParam(name = "n") Long numberOfBins) throws ApiException {
-        dto.addBin(numberOfBins);
+    public List<BinData> addBin(@RequestParam(name = "n") Long numberOfBins) throws ApiException {
+        return dto.addBin(numberOfBins);
     }
 
     @RequestMapping(method = RequestMethod.GET)
     @ApiOperation(value = "get all bin ids")
-    public List<BinPojo> getAll() {
+    public List<BinData> getAll() {
         return dto.getAll();
     }
 }

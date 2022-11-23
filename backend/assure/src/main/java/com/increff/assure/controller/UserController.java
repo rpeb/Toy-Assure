@@ -42,6 +42,8 @@ public class UserController {
         return dto.getUserById(id);
     }
 
+    // todo: validations and normalizations
+
     @RequestMapping(method = RequestMethod.PATCH)
     @ApiOperation(value = "change the name of user")
     public void updateUserName(@RequestBody UserForm userForm, @RequestParam String name) {

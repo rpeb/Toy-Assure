@@ -2,6 +2,7 @@ package com.increff.assure.controller;
 
 import com.increff.assure.dto.OrderDto;
 import com.increff.assure.model.form.InternalOrderForm;
+import com.increff.assure.util.InvoiceUploadException;
 import com.increff.commons.exception.ApiException;
 import com.increff.commons.model.form.ChannelOrderForm;
 import io.swagger.annotations.Api;
@@ -37,9 +38,15 @@ public class OrderController {
         dto.allocateOrder(orderId);
     }
 
+    @RequestMapping(value = "/fulfill/{orderId}", method = RequestMethod.PUT)
+    @ApiOperation(value = "allocate an order")
+    public void fulfillOrder(@PathVariable Long orderId) throws ApiException {
+        dto.fulfillOrder(orderId);
+    }
+
     @RequestMapping(value = "/invoice/{orderId}", method = RequestMethod.GET)
     @ApiOperation(value = "get invoice for a particular order")
-    public String getInvoice(@PathVariable Long orderId) throws ApiException, IOException, TransformerException {
+    public String getInvoice(@PathVariable Long orderId) throws ApiException, IOException, TransformerException, InvoiceUploadException {
         return dto.getInvoice(orderId);
     }
 }
