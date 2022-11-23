@@ -1,5 +1,7 @@
 package com.increff.assure.dto;
 
+import com.increff.assure.util.RandomUtil;
+import com.increff.commons.exception.ApiException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,10 +24,27 @@ public class BinDtoTest {
     private BinDto binDto;
 
     @Test
-    public void addBin() {
+    public void addBin() throws ApiException {
+        Long numberOfBins = RandomUtil.getRandomNumberBetween1to100();
+        Long numberOfBinsCreated = (long) binDto.addBin(numberOfBins).size();
+        assertEquals(numberOfBinsCreated, numberOfBins);
     }
 
     @Test
-    public void getAll() {
+    public void binSize() throws ApiException {
+        Long numberOfBins = RandomUtil.getRandomNumberBetween1to100();
+        binDto.addBin(numberOfBins);
+        Long totalNumberOfBins = (long) binDto.getAll().size();
+        assertEquals(numberOfBins, totalNumberOfBins);
+    }
+
+    @Test
+    public void throwsErrorForNegativeNumberOfBins() {
+        Long numberOfBins = -1L;
+        try {
+            binDto.addBin(numberOfBins);
+        } catch (ApiException e) {
+            assertEquals("number of bins cannot be negative", e.getMessage());
+        }
     }
 }

@@ -93,11 +93,4 @@ public class BinSkuDto {
                 break;
         }
     }
-
-    public void setAvailableQuantityToZero(Long globalSkuId) {
-        List<BinSkuPojo> binSkuPojos = binSkuApi.getByGlobalSkuId(globalSkuId);
-        for (BinSkuPojo binSkuPojo : binSkuPojos) {
-            binSkuPojo.setQuantity(0L);
-        }
-    }
 }
