@@ -2,8 +2,7 @@ package com.increff.assure.util;
 
 public class RandomUtil {
 
-    public static String getRandomString()
-    {
+    public static String getRandomString() {
         return getRandomString(8);
     }
 
@@ -11,7 +10,7 @@ public class RandomUtil {
         String src = "abcdefghijklmnopqrstuvwxyz0123456789";
         String str = "TST";
 
-        for(int i=0;i<len;i++){
+        for(int i=0;i<len;i++) {
             int index = (int) (Math.random()*100%(src.length()));
             str += src.charAt(index);
         }
